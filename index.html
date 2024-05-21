@@ -48,15 +48,15 @@ Page:
   <button id="zoomOut">Zoom Out</button>
 </div>
 
-<script src='./javascript/jquery-3.7.1.min.js'></script>
-<script src='./javascript/turnjs4/lib/turn.min.js'></script>
-<script src='./javascript/turnjs4/lib/zoom.min.js'></script>
+<script src='javascript/jquery-3.7.1.min.js'></script>
+<script src='javascript/turnjs4/lib/turn.min.js'></script>
+<script src='javascript/turnjs4/lib/zoom.min.js'></script>
 <script type="text/javascript">
 
 $(window).ready(function() {
   // 使用 AJAX 獲取檔案數量並新增頁面
   $.ajax({
-    url: './files/', // 修改為相對路徑
+    url: 'files/', // 修改為相對路徑
     success: function(files) {
       var pageCount = files.length; // 圖片檔案數量
       addPages(pageCount);
@@ -82,7 +82,7 @@ $(window).ready(function() {
 
 function addPages(pageCount) {
   for (var i = 0; i < pageCount; i++) {
-    $('#flipbook').append('<div><img src="./files/' + (i + 1) + '.jpg"></div>');
+    $('#flipbook').append('<div><img src="files/' + (i + 1) + '.jpg"></div>');
   }
 }
 
