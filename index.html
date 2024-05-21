@@ -58,8 +58,8 @@ $(window).ready(function() {
   $.ajax({
     url: './files/', // 修改為相對路徑
     success: function(files) {
-      var pageCount = files.length; // 修改這裡
-      addPages(files);
+      var pageCount = files.length; // 圖片檔案數量
+      addPages(pageCount);
       
       $('#flipbook').turn({
         display: 'double',
@@ -80,11 +80,10 @@ $(window).ready(function() {
   });
 });
 
-function addPages(files) {
-  files.forEach(function(fileName) {
-    var fileUrl = './files/' + fileName; // 構建圖片檔案的路徑
-    $('#flipbook').append('<div><img src="' + fileUrl + '"></div>');
-  });
+function addPages(pageCount) {
+  for (var i = 0; i < pageCount; i++) {
+    $('#flipbook').append('<div><img src="./files/image' + (i + 1) + '.jpg"></div>');
+  }
 }
 
 $(window).resize(function(){
