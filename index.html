@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Page Title</title>
+  <style>
+    body {
+      background: #ccc;
+    }
+    html,
+    body {
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+      min-height: 100%;
+      min-width: 100%;
+    }
+
+    #flipbook {
+      width: 100%;
+      height: 100%;
+    }
+
+    #flipbook .page {
+      background-color: #ccc;
+      background-size: 100% 100%;
+    }
+
+    .controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+<div id="flipbook">
+  <!-- JavaScript 會動態生成下面的 div 元素 -->
+</div>
+
+<div class="controls">
+Page:
+  <input type="number" id="pageFld" min=1/>
+  <button id="prevPage">Previous Page</button>
+  <button id="nextPage">Next Page</button>
+  <button id="zoomIn">Zoom In</button>
+  <button id="zoomOut">Zoom Out</button>
+</div>
+
+<script src='./javascript/jquery-3.7.1.min.js'></script>
+<script src='./javascript/turnjs4/lib/turn.min.js'></script>
+<script src='./javascript/turnjs4/lib/zoom.min.js'></script>
+<script type="text/javascript">
+
+$(window).ready(function() {
+  // 使用 AJAX 獲取檔案數量並新增頁面
+  $.ajax({
+    url: './files/', // 修改為相對路徑
+    success: function(files) {
+      var pageCount = files.length; // 修改這裡
+      addPages(files);
+      
+      $('#flipbook').turn({
+        display: 'double',
+        acceleration: true,
+        gradients: !$.isTouch,
+        elevation: 50,
+        autoCenter: true,
+        when: {
+          turned: function(e, page) {
+            /*console.log('Current view: ', $(this).turn('view'));*/
+          }
+        }
+      });
+    },
+    error: function(xhr, status, error) {
+      console.error('Error fetching files:', error);
+    }
+  });
+});
+
+function addPages(files) {
+  files.forEach(function(fileName) {
+    var fileUrl = './files/' + fileName; // 構建圖片檔案的路徑
+    $('#flipbook').append('<div><img src="' + fileUrl + '"></div>');
+  });
+}
+
+$(window).resize(function(){
+  $('#flipbook').turn("size", window.innerWidth * 0.5, window.innerHeight * 0.8);
+});
+
+// Previous Page Button
+$('#prevPage').click(function() {
+  $('#flipbook').turn('previous');
+});
+
+// Next Page Button
+$('#nextPage').click(function() {
+  $('#flipbook').turn('next');
+});
+
+// Zoom In Button
+$('#zoomIn').click(function() {
+  $('#flipbook').turn('zoom', 2);
+});
+
+// Zoom Out Button
+$('#zoomOut').click(function() {
+  $('#flipbook').turn('zoom', 1);
+});
+
+// Keyboard Controls
+$(window).bind('keydown', function(e) {
+  if (e.keyCode == 37) // Left arrow key
+    $('#flipbook').turn('previous');
+  else if (e.keyCode == 39) // Right arrow key
+    $('#flipbook').turn('next');
+});
+
+// 獲取當前頁面為第幾頁
+$("#pageFld").val($("#flipbook").turn("page"));
+
+$("#flipbook").bind("turned", function(event, page, view) {
+  $("#pageFld").val(page);
+});
+
+$("#pageFld").change(function() {
+  $("#flipbook").turn("page", $(this).val());
+});
+
+</script>
+</body>
+</html>
