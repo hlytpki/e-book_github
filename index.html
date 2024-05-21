@@ -22,7 +22,9 @@
 
     #flipbook .page {
       background-color: #ccc;
-      background-size: 100% 100%;
+      background-size: contain; /* 圖片自動調整以適應容器 */
+      background-repeat: no-repeat; /* 避免圖片重複 */
+      background-position: center; /* 圖片置中 */
     }
 
     .controls {
@@ -58,7 +60,7 @@ $(window).ready(function() {
   $.get('https://api.github.com/repos/hlytpki/ebook/contents/files/', function(data) {
     var pageCount = data.length; // 獲取文件列表的長度
     for (var i = 0; i < pageCount; i++) {
-      $('#flipbook').append('<div class="page"><img src="' + data[i].download_url + '" /></div>'); // 創建頁面元素並加載圖片
+      $('#flipbook').append('<div class="page" style="background-image: url(' + data[i].download_url + ')"></div>'); // 創建頁面元素並加載圖片
     }
     
     // 初始化翻頁效果
@@ -74,11 +76,15 @@ $(window).ready(function() {
         }
       }
     });
-  });
-});
 
-$(window).resize(function(){
-  $('#flipbook').turn("size", window.innerWidth * 0.5, window.innerHeight * 0.8);
+    // 自動調整頁面大小以適應視窗
+    $(window).resize(function(){
+      var flipbook = $('#flipbook');
+      flipbook.turn("size", window.innerWidth * 0.5, window.innerHeight * 0.8);
+      flipbook.find('.page').css('background-size', 'contain'); // 調整圖片大小以適應容器
+    }).resize(); // 調用 resize 事件來初始化
+
+  });
 });
 
 // Previous Page Button
