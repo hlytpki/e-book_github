@@ -56,7 +56,7 @@ Page:
 $(window).ready(function() {
   // 使用 AJAX 獲取檔案數量並新增頁面
   $.ajax({
-    url: './files/', // 修改為相對路徑
+    url: 'https://hlytpki.github.io/ebook/files/', // 修改為相對路徑
     success: function(files) {
       var pageCount = files.length; // 圖片檔案數量
       addPages(pageCount);
@@ -82,7 +82,7 @@ $(window).ready(function() {
 
 function addPages(pageCount) {
   for (var i = 0; i < pageCount; i++) {
-    $('#flipbook').append('<div><img src="./files/' + (i + 1) + '.jpg"></div>');
+    $('#flipbook').append('<div><img src="https://hlytpki.github.io/ebook/files/' + (i + 1) + '.jpg"></div>');
   }
 }
 
