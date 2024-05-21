@@ -55,10 +55,10 @@
 
 $(window).ready(function() {
   // 根據 files 資料夾中的圖片數量生成頁面
-  $.get('files/', function(data) {
+  $.get('https://api.github.com/repos/hlytpki/ebook/contents/files/', function(data) {
     $(data).find("a").attr("href", function (i, val) {
       if (val.match(/\.(jpe?g|png|gif)$/)) {
-        $('#flipbook').append('<div class="page"><img src="files/' + val + '" /></div>');
+        $('#flipbook').append('<div class="page"><img src="https://api.github.com/repos/hlytpki/ebook/contents/files/' + val + '" /></div>');
       }
     });
     
