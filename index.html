@@ -58,7 +58,7 @@ $(window).ready(function() {
   $.get('https://api.github.com/repos/hlytpki/ebook/contents/files/', function(data) {
     var pageCount = data.length; // 獲取文件列表的長度
     for (var i = 0; i < pageCount; i++) {
-      $('#flipbook').append('<div class="page"></div>'); // 創建頁面元素
+      $('#flipbook').append('<div class="page"><img src="' + data[i].download_url + '" /></div>'); // 創建頁面元素並加載圖片
     }
     
     // 初始化翻頁效果
