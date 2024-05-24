@@ -130,7 +130,6 @@ $(window).ready(function() {
     // Adjust flipbook size
     $(window).resize(function(){
       adjustFlipbookSize();
-      togglePageView();
     }).resize();
 
   });
@@ -202,18 +201,15 @@ $(window).ready(function() {
 
 function adjustFlipbookSize() {
   var flipbook = $('#flipbook');
-  flipbook.turn("size", window.innerWidth*0.67, window.innerHeight*0.93);
-  flipbook.find('.page').css('background-size', 'contain');
-}
-
-function togglePageView() {
   var windowWidth = $(window).width();
   var windowHeight = $(window).height();
-  var isSinglePageView = windowWidth < 560 || windowHeight < 560; // 7吋手机大约是560px x 1000px
+  var isSinglePageView = windowWidth < 560 || windowHeight < 560;
   if (isSinglePageView) {
-    $('#flipbook').turn('display', 'single');
+    flipbook.turn('display', 'single');
+    flipbook.turn("size", windowWidth, windowHeight);
   } else {
-    $('#flipbook').turn('display', 'double');
+    flipbook.turn('display', 'double');
+    flipbook.turn("size", windowWidth*0.67, windowHeight*0.93);
   }
 }
 
