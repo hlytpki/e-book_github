@@ -13,34 +13,67 @@
     body {
       height: 100%;
       width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      margin: 0;
+      padding: 0;
     }
 
     #flipbook-container {
       width: 100%;
-      height: 100%;
-      position: relative;
+      height: calc(100% - 1rem);
+      position: absolute;
+      top: 0;
+      left: 0;
       overflow: hidden;
-      cursor: grab; /* Add grab cursor */
+      cursor: grab;
+      z-index: 1;
     }
 
     #flipbook {
       width: 100%;
       height: 100%;
       position: absolute;
+      z-index: 0;
     }
 
     #flipbook .page {
-      background-color: #ccc;
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #flipbook img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
     }
 
     .controls {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 0.5rem;
+      background-color: black;
+    }
+
+    .controls button {
+      margin-right: 0.5rem;
+    }
+
+    #extra-block {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 1rem;
+      background-color: black;
+      z-index: 2;
+      transition: bottom 0.3s ease;
     }
   </style>
 </head>
@@ -48,17 +81,21 @@
 
 <div id="flipbook-container">
   <div id="flipbook">
-    <!-- JavaScript 會動態生成下面的 div 元素 -->
+    <!-- JavaScript will dynamically generate div elements here -->
   </div>
 </div>
 
-<div class="controls">
-  Page:
-  <input type="number" id="pageFld" min=1/>
-  <button id="prevPage">Previous Page</button>
-  <button id="nextPage">Next Page</button>
-  <button id="zoomIn">Zoom In</button>
-  <button id="zoomOut">Zoom Out</button>
+<!-- New block -->
+<div id="extra-block">
+  <!-- Move the buttons here -->
+  <div class="controls">
+    Page:
+    <input type="number" id="pageFld" min=1/>
+    <button id="prevPage">Previous Page</button>
+    <button id="nextPage">Next Page</button>
+    <button id="zoomIn">Zoom In</button>
+    <button id="zoomOut">Zoom Out</button>
+  </div>
 </div>
 
 <script src='javascript/jquery-3.7.1.min.js'></script>
@@ -73,7 +110,7 @@ $(window).ready(function() {
   $.get('https://api.github.com/repos/hlytpki/ebook/contents/files/', function(data) {
     var pageCount = data.length;
     for (var i = 0; i < pageCount; i++) {
-      $('#flipbook').append('<div class="page" style="background-image: url(' + data[i].download_url + ')"></div>');
+      $('#flipbook').append('<div class="page"><img src="' + data[i].download_url + '"></div>');
     }
     
     // Initialize flipbook
@@ -92,9 +129,8 @@ $(window).ready(function() {
 
     // Adjust flipbook size
     $(window).resize(function(){
-      var flipbook = $('#flipbook');
-      flipbook.turn("size", window.innerWidth * 0.6692, window.innerHeight * 0.9335);
-      flipbook.find('.page').css('background-size', 'contain');
+      adjustFlipbookSize();
+      togglePageView();
     }).resize();
 
   });
@@ -117,12 +153,14 @@ $(window).ready(function() {
   $('#zoomIn').click(function() {
     $('#flipbook').turn('zoom', 2);
     isZoomed = true;
+    /*$('#extra-block').css('bottom', '1rem');*/
   });
 
   // Zoom Out Button
   $('#zoomOut').click(function() {
     $('#flipbook').turn('zoom', 1);
     isZoomed = false;
+    $('#extra-block').css('bottom', '0');
   });
 
   // Get current page number
@@ -139,7 +177,7 @@ $(window).ready(function() {
   // Enable drag functionality
   $('#flipbook-container').on('mousedown', function(e) {
     if (isZoomed) {
-      $(this).css('cursor', 'grabbing'); // Change cursor style
+      $(this).css('cursor', 'grabbing');
       var startX = e.clientX;
       var startY = e.clientY;
       var scrollLeft = $(this).scrollLeft();
@@ -161,6 +199,23 @@ $(window).ready(function() {
   });
 
 });
+
+function adjustFlipbookSize() {
+  var flipbook = $('#flipbook');
+  flipbook.turn("size", window.innerWidth*0.67, window.innerHeight*0.93);
+  flipbook.find('.page').css('background-size', 'contain');
+}
+
+function togglePageView() {
+  var windowWidth = $(window).width();
+  var windowHeight = $(window).height();
+  var isSinglePageView = windowWidth < 560 || windowHeight < 560; // 7吋手机大约是560px x 1000px
+  if (isSinglePageView) {
+    $('#flipbook').turn('display', 'single');
+  } else {
+    $('#flipbook').turn('display', 'double');
+  }
+}
 
 </script>
 </body>
