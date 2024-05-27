@@ -121,6 +121,7 @@
   <script>
     var scale = 1;
     var isZoomed = false;
+    var isSinglePageView = false;
 
     $(window).ready(function () {
       // Get images from GitHub API
@@ -147,8 +148,9 @@
         // Adjust flipbook size
         $(window).resize(function () {
           adjustFlipbookSize();
+          var currentPage = $('#flipbook').turn('page');
+          updatePageField(currentPage, pageCount);
         }).resize();
-
       });
 
       // Previous Page Button
@@ -220,12 +222,16 @@
     });
 
     function updatePageField(page, totalPages) {
-      if (page === 1) {
-        $('#pageFld').val('1 / ' + totalPages);
-      } else if (page % 2 === 0) {
-        $('#pageFld').val(page + ' - ' + (page + 1) + ' / ' + totalPages);
+      if (isSinglePageView) {
+        $('#pageFld').val(page + ' / ' + totalPages);
       } else {
-        $('#pageFld').val((page - 1) + ' - ' + page + ' / ' + totalPages);
+        if (page === 1) {
+          $('#pageFld').val('1 / ' + totalPages);
+        } else if (page % 2 === 0) {
+          $('#pageFld').val(page + ' - ' + (page + 1) + ' / ' + totalPages);
+        } else {
+          $('#pageFld').val((page - 1) + ' - ' + page + ' / ' + totalPages);
+        }
       }
     }
 
@@ -233,7 +239,7 @@
       var flipbook = $('#flipbook');
       var windowWidth = $(window).width();
       var windowHeight = $(window).height();
-      var isSinglePageView = windowWidth < 560 || windowHeight < 560;
+      isSinglePageView = windowWidth < 560 || windowHeight < 560;
       if (isSinglePageView) {
         flipbook.turn('display', 'single');
         flipbook.turn("size", windowWidth, windowHeight);
