@@ -1,31 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Page Title</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>花東執誌</title>
   <style>
     body {
       background: #ccc;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       overflow: hidden;
-      margin: 0;
-      padding: 0;
-    }
-    html,
-    body {
-      height: 100%;
-      width: 100%;
-      position: fixed;
-      top: 0;
-      left: 0;
-      margin: 0;
-      padding: 0;
     }
 
     #flipbook-container {
       width: 100%;
       height: calc(100% - 1rem);
       position: absolute;
-      top: 0;
-      left: 0;
       overflow: hidden;
       cursor: grab;
       z-index: 1;
@@ -59,6 +53,10 @@
       width: 100%;
       padding: 0.5rem;
       background-color: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
     }
 
     .controls button {
@@ -75,144 +73,180 @@
       z-index: 2;
       transition: bottom 0.3s ease;
     }
+
+    #zoom-controls {
+      position: fixed;
+      top: 0.5rem;
+      right: 0.5rem;
+      z-index: 3;
+    }
+
+    #zoom-controls button {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
   </style>
 </head>
+
 <body>
 
-<div id="flipbook-container">
-  <div id="flipbook">
-    <!-- JavaScript will dynamically generate div elements here -->
+  <div id="flipbook-container">
+    <div id="flipbook">
+      <!-- JavaScript will dynamically generate div elements here -->
+    </div>
   </div>
-</div>
 
-<!-- New block -->
-<div id="extra-block">
-  <!-- Move the buttons here -->
-  <div class="controls">
-    Page:
-    <input type="number" id="pageFld" min=1/>
-    <button id="prevPage">Previous Page</button>
-    <button id="nextPage">Next Page</button>
-    <button id="zoomIn">Zoom In</button>
-    <button id="zoomOut">Zoom Out</button>
+  <!-- New block -->
+  <div id="extra-block">
+    <!-- Move the buttons here -->
+    <div class="controls">
+      <button id="prevPage">Previous Page</button>
+      Page:
+      <input type="text" id="pageFld" readonly />
+      <button id="nextPage">Next Page</button>
+      <button id="zoomIn">Zoom In</button>
+      <button id="zoomOut">Zoom Out</button>
+    </div>
   </div>
-</div>
 
-<script src='javascript/jquery-3.7.1.min.js'></script>
-<script src='javascript/turnjs4/lib/turn.min.js'></script>
-<script src='javascript/turnjs4/lib/zoom.min.js'></script>
-<script type="text/javascript">
+  <!-- Zoom controls -->
+  <div id="zoom-controls" style="display: none;">
+    <button id="zoomInMore">Zoom In More</button>
+    <button id="zoomOutMore">Zoom Out More</button>
+  </div>
 
-var isZoomed = false;
+  <script src='javascript/jquery-3.7.1.min.js'></script>
+  <script src='javascript/turnjs4/lib/turn.min.js'></script>
+  <script src='javascript/turnjs4/lib/zoom.min.js'></script>
+  <script>
+    var scale = 1;
+    var isZoomed = false;
 
-$(window).ready(function() {
-  // Get images from GitHub API
-  $.get('https://api.github.com/repos/hlytpki/ebook/contents/files/', function(data) {
-    var pageCount = data.length;
-    for (var i = 0; i < pageCount; i++) {
-      $('#flipbook').append('<div class="page"><img src="' + data[i].download_url + '"></div>');
-    }
-    
-    // Initialize flipbook
-    $('#flipbook').turn({
-      display: 'double',
-      acceleration: true,
-      gradients: !$.isTouch,
-      elevation: 50,
-      autoCenter: true,
-      when: {
-        turned: function(e, page) {
-          /*console.log('Current view: ', $(this).turn('view'));*/
+    $(window).ready(function () {
+      // Get images from GitHub API
+      $.get('https://api.github.com/repos/hlytpki/ebook/contents/files/', function (data) {
+        var pageCount = data.length;
+        for (var i = 0; i < pageCount; i++) {
+          $('#flipbook').append('<div class="page"><img src="' + data[i].download_url + '"></div>');
         }
-      }
+
+        // Initialize flipbook
+        $('#flipbook').turn({
+          display: 'double',
+          acceleration: true,
+          gradients: !$.isTouch,
+          elevation: 50,
+          autoCenter: true,
+          when: {
+            turned: function (e, page) {
+              updatePageField(page, pageCount);
+            }
+          }
+        });
+
+        // Adjust flipbook size
+        $(window).resize(function () {
+          adjustFlipbookSize();
+        }).resize();
+
+      });
+
+      // Previous Page Button
+      $('#prevPage').click(function () {
+        if (!isZoomed) {
+          $('#flipbook').turn('previous');
+        }
+      });
+
+      // Next Page Button
+      $('#nextPage').click(function () {
+        if (!isZoomed) {
+          $('#flipbook').turn('next');
+        }
+      });
+
+      // Zoom In Button
+      $('#zoomIn').click(function () {
+        $('#flipbook').turn('zoom', 2);
+        isZoomed = true;
+        $('#zoom-controls').show();
+      });
+
+      // Zoom Out Button
+      $('#zoomOut').click(function () {
+        $('#flipbook').turn('zoom', 1);
+        isZoomed = false;
+        $('#zoom-controls').hide();
+        $('#extra-block').show();
+        resetZoom();
+      });
+
+      // Zoom In More Button
+      $('#zoomInMore').click(function () {
+        scale += 0.1;
+        $('#flipbook').css('transform', 'scale(' + scale + ')');
+      });
+
+      // Zoom Out More Button
+      $('#zoomOutMore').click(function () {
+        scale = Math.max(1, scale - 0.1);
+        $('#flipbook').css('transform', 'scale(' + scale + ')');
+      });
+
+      // Enable drag functionality
+      $('#flipbook-container').on('mousedown', function (e) {
+        if (isZoomed) {
+          $(this).css('cursor', 'grabbing');
+          var startX = e.clientX;
+          var startY = e.clientY;
+          var scrollLeft = $(this).scrollLeft();
+          var scrollTop = $(this).scrollTop();
+
+          $(this).on('mousemove', function (event) {
+            var dx = event.clientX - startX;
+            var dy = event.clientY - startY;
+            $(this).scrollLeft(scrollLeft - dx);
+            $(this).scrollTop(scrollTop - dy);
+          });
+        }
+      });
+
+      // Disable drag functionality
+      $(document).on('mouseup', function () {
+        $('#flipbook-container').css('cursor', 'grab');
+        $('#flipbook-container').off('mousemove');
+      });
+
     });
 
-    // Adjust flipbook size
-    $(window).resize(function(){
-      adjustFlipbookSize();
-    }).resize();
-
-  });
-
-  // Previous Page Button
-  $('#prevPage').click(function() {
-    if (!isZoomed) {
-      $('#flipbook').turn('previous');
+    function updatePageField(page, totalPages) {
+      if (page === 1) {
+        $('#pageFld').val('1 / ' + totalPages);
+      } else if (page % 2 === 0) {
+        $('#pageFld').val(page + ' - ' + (page + 1) + ' / ' + totalPages);
+      } else {
+        $('#pageFld').val((page - 1) + ' - ' + page + ' / ' + totalPages);
+      }
     }
-  });
 
-  // Next Page Button
-  $('#nextPage').click(function() {
-    if (!isZoomed) {
-      $('#flipbook').turn('next');
+    function adjustFlipbookSize() {
+      var flipbook = $('#flipbook');
+      var windowWidth = $(window).width();
+      var windowHeight = $(window).height();
+      var isSinglePageView = windowWidth < 560 || windowHeight < 560;
+      if (isSinglePageView) {
+        flipbook.turn('display', 'single');
+        flipbook.turn("size", windowWidth, windowHeight);
+      } else {
+        flipbook.turn('display', 'double');
+        flipbook.turn("size", windowWidth * 0.67, windowHeight * 0.93);
+      }
     }
-  });
 
-  // Zoom In Button
-  $('#zoomIn').click(function() {
-    $('#flipbook').turn('zoom', 2);
-    isZoomed = true;
-    /*$('#extra-block').css('bottom', '1rem');*/
-  });
-
-  // Zoom Out Button
-  $('#zoomOut').click(function() {
-    $('#flipbook').turn('zoom', 1);
-    isZoomed = false;
-    $('#extra-block').css('bottom', '0');
-  });
-
-  // Get current page number
-  $("#pageFld").val($("#flipbook").turn("page"));
-
-  $("#flipbook").bind("turned", function(event, page, view) {
-    $("#pageFld").val(page);
-  });
-
-  $("#pageFld").change(function() {
-    $("#flipbook").turn("page", $(this).val());
-  });
-
-  // Enable drag functionality
-  $('#flipbook-container').on('mousedown', function(e) {
-    if (isZoomed) {
-      $(this).css('cursor', 'grabbing');
-      var startX = e.clientX;
-      var startY = e.clientY;
-      var scrollLeft = $(this).scrollLeft();
-      var scrollTop = $(this).scrollTop();
-      
-      $(this).on('mousemove', function(event) {
-        var dx = event.clientX - startX;
-        var dy = event.clientY - startY;
-        $(this).scrollLeft(scrollLeft - dx);
-        $(this).scrollTop(scrollTop - dy);
-      });
+    function resetZoom() {
+      scale = 1;
+      $('#flipbook').css('transform', 'scale(' + scale + ')');
     }
-  });
-
-  // Disable drag functionality
-  $(document).on('mouseup', function() {
-    $('#flipbook-container').css('cursor', 'grab');
-    $('#flipbook-container').off('mousemove');
-  });
-
-});
-
-function adjustFlipbookSize() {
-  var flipbook = $('#flipbook');
-  var windowWidth = $(window).width();
-  var windowHeight = $(window).height();
-  var isSinglePageView = windowWidth < 560 || windowHeight < 560;
-  if (isSinglePageView) {
-    flipbook.turn('display', 'single');
-    flipbook.turn("size", windowWidth, windowHeight);
-  } else {
-    flipbook.turn('display', 'double');
-    flipbook.turn("size", windowWidth*0.67, windowHeight*0.93);
-  }
-}
-
-</script>
+  </script>
 </body>
 </html>
