@@ -132,7 +132,7 @@
 
         // Initialize flipbook
         $('#flipbook').turn({
-          display: 'double',
+          display: getDisplayMode(),
           acceleration: true,
           gradients: !$.isTouch,
           elevation: 50,
@@ -240,6 +240,15 @@
       } else {
         flipbook.turn('display', 'double');
         flipbook.turn("size", windowWidth * 0.67, windowHeight * 0.93);
+      }
+    }
+
+    function getDisplayMode() {
+      var userAgent = navigator.userAgent.toLowerCase();
+      if (userAgent.includes('mobi') || userAgent.includes('android') || userAgent.includes('iphone') || userAgent.includes('ipad')) {
+        return 'single';
+      } else {
+        return 'double';
       }
     }
 
